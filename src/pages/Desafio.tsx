@@ -151,6 +151,7 @@ const BannerCarousel = ({ banners }: { banners: Banner[] }) => {
               {visibleBanners[current].subtitle}
             </motion.p>
 
+
             {visibleBanners[current].features && visibleBanners[current].features.length > 0 && (
               <motion.ul 
                 initial={{ y: 20, opacity: 0 }}
@@ -166,24 +167,6 @@ const BannerCarousel = ({ banners }: { banners: Banner[] }) => {
                 ))}
               </motion.ul>
             )}
-
-            <motion.button
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              onClick={() => {
-                if (visibleBanners[current].cta_link) {
-                  window.location.href = visibleBanners[current].cta_link;
-                }
-              }}
-              className={`mt-4 px-8 py-3.5 rounded-2xl font-black text-xs md:text-sm tracking-widest uppercase transition-all shadow-xl
-                ${current === 1 
-                  ? 'bg-white text-black hover:bg-white/90 shadow-white/10' 
-                  : 'bg-accent text-white hover:bg-accent/90 shadow-accent/20'}
-              `}
-            >
-              {visibleBanners[current].cta_text}
-            </motion.button>
           </div>
           
           <div className="absolute right-0 top-0 h-full w-full md:w-1/2 overflow-hidden pointer-events-none opacity-20 md:opacity-100">
@@ -483,25 +466,34 @@ const Challenge = () => {
           <BannerCarousel banners={challengeBanners} />
         </div>
 
-        {/* Módulo Dinâmico do Mês */}
-        <div className="mb-16">
-          <div className="bg-accent/10 border border-accent/20 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px]" />
-            <div className="relative z-10 flex items-center gap-6">
-               <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center text-accent shrink-0 border border-accent/30 shadow-[0_0_30px_rgba(255,107,0,0.3)]">
-                  <Star size={32} />
-               </div>
-               <div>
-                  <h4 className="text-xs font-black uppercase text-accent tracking-[0.3em] mb-1">Conteúdo Exclusivo Mensal</h4>
-                  <h3 className="text-2xl font-bold italic text-foreground tracking-tight">{getModuleOfTheMonth()}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 max-w-md">Novo módulo liberado todos os meses. Aproveite o foco deste mês para elevar seu nível.</p>
-               </div>
+        {/* Módulo Dinâmico do Mês — só aparece se existem módulos criados */}
+        {challengeModules.length > 0 && (() => {
+          const latestModule = challengeModules[challengeModules.length - 1];
+          const Icon = latestModule.icon === 'Utensils' ? Utensils : latestModule.icon === 'Dumbbell' ? Dumbbell : latestModule.icon === 'Users' ? Users : latestModule.icon === 'Flame' ? Flame : BookOpen;
+          return (
+            <div className="mb-16">
+              <div className="bg-accent/10 border border-accent/20 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px]" />
+                <div className="relative z-10 flex items-center gap-6">
+                   <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center text-accent shrink-0 border border-accent/30 shadow-[0_0_30px_rgba(255,107,0,0.3)]">
+                      <Icon size={32} />
+                   </div>
+                   <div>
+                      <h4 className="text-xs font-black uppercase text-accent tracking-[0.3em] mb-1">Conteúdo Exclusivo</h4>
+                      <h3 className="text-2xl font-bold italic text-foreground tracking-tight">{latestModule.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-md">Módulo disponível para você. Clique para acessar as aulas e materiais.</p>
+                   </div>
+                </div>
+                <button
+                  onClick={() => setSelectedModuleId(latestModule.id)}
+                  className="relative z-10 shrink-0 bg-white hover:bg-white/90 text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-105 shadow-xl"
+                >
+                   Acessar Módulo
+                </button>
+              </div>
             </div>
-            <button className="relative z-10 shrink-0 bg-white hover:bg-white/90 text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-105 shadow-xl">
-               Acessar Módulo
-            </button>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Modules Grid */}
         <div className="mb-12">

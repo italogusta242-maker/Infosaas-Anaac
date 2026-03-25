@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { UtensilsCrossed, Droplets, Minus, Plus, Moon, TrendingUp } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { UtensilsCrossed, Droplets, Minus, Plus, Moon, TrendingUp, Check } from "lucide-react";
 import type { DayPerformance } from "@/hooks/useRealPerformance";
 
 interface DailyGoalsProps {
@@ -20,6 +19,20 @@ interface DailyGoalsProps {
   performanceData?: DayPerformance[];
 }
 
+/** Circular check indicator */
+const CheckCircle = ({ done, color }: { done: boolean; color: string }) => (
+  <div
+    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
+      done
+        ? "scale-110 shadow-lg"
+        : "border-muted-foreground/30 bg-transparent"
+    }`}
+    style={done ? { borderColor: color, backgroundColor: color, boxShadow: `0 0 12px ${color}40` } : {}}
+  >
+    {done && <Check size={14} className="text-white" strokeWidth={3} />}
+  </div>
+);
+
 const DailyGoals = ({
   mealsCompleted,
   totalMeals,
@@ -37,6 +50,10 @@ const DailyGoals = ({
 }: DailyGoalsProps) => {
   const last7 = performanceData.slice(-7);
 
+  const mealsDone = mealsCompleted >= totalMeals;
+  const waterDone = waterIntake >= waterGoal;
+  const sleepDone = sleepHours >= sleepGoal;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -48,52 +65,70 @@ const DailyGoals = ({
         <h3 className="font-cinzel text-xl font-bold text-primary">Metas Diárias</h3>
       </div>
       
-      <div className="space-y-8">
+      <div className="space-y-5">
         {/* Refeições Concluídas */}
-        <div className="bg-secondary/10 p-6 rounded-3xl border border-secondary/20">
-          <div className="flex justify-between text-sm text-muted-foreground mb-3 font-medium uppercase tracking-widest">
-            <span className="flex items-center gap-2">
-              <UtensilsCrossed size={16} className={iconAccentClass} /> Refeições do Cardápio
+        <div className="bg-secondary/10 p-5 rounded-3xl border border-secondary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle done={mealsDone} color={mealBarColor} />
+              <div>
+                <span className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                  <UtensilsCrossed size={14} className={iconAccentClass} /> Refeições
+                </span>
+                <span className="text-xs text-muted-foreground/60">{mealsCompleted} / {totalMeals} refeições</span>
+              </div>
+            </div>
+            <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full ${mealsDone ? "bg-green-500/20 text-green-400" : "bg-muted/20 text-muted-foreground"}`}>
+              {mealsDone ? "Concluído" : "Pendente"}
             </span>
-            <span className="font-black text-foreground">{mealsCompleted} / {totalMeals}</span>
           </div>
-          <Progress value={(mealsCompleted / totalMeals) * 100} className="h-3" indicatorColor={mealBarColor} />
         </div>
 
         {/* Água (Adição manual) */}
-        <div className="bg-secondary/10 p-6 rounded-3xl border border-secondary/20">
-          <div className="flex justify-between items-center text-sm text-muted-foreground mb-3 font-medium uppercase tracking-widest">
-            <span className="flex items-center gap-2">
-              <Droplets size={16} className={dropletsClass} /> Consumo de Água
-            </span>
-            <div className="flex items-center gap-3 bg-background/40 p-1.5 rounded-xl border border-border/50">
+        <div className="bg-secondary/10 p-5 rounded-3xl border border-secondary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle done={waterDone} color={waterBarColor} />
+              <div>
+                <span className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                  <Droplets size={14} className={dropletsClass} /> Água
+                </span>
+                <span className="text-xs text-muted-foreground/60">{waterIntake.toFixed(2)}L / {waterGoal}L</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-background/40 p-1.5 rounded-xl border border-border/50">
               <button 
                 onClick={() => setWaterIntake(Math.max(0, waterIntake - 0.25))} 
-                className="p-1 rounded-lg bg-secondary/50 hover:bg-secondary active:scale-95 transition-transform"
+                className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary active:scale-95 transition-transform"
               >
-                <Minus size={14} />
+                <Minus size={12} />
               </button>
-              <span className="font-black text-foreground w-20 text-center">{waterIntake.toFixed(2)}L <span className="text-muted-foreground font-normal text-[10px]">/ {waterGoal}L</span></span>
               <button 
                 onClick={() => setWaterIntake(waterIntake + 0.25)} 
-                className="p-1 rounded-lg bg-secondary/50 hover:bg-secondary active:scale-95 transition-transform"
+                className="p-1.5 rounded-lg bg-secondary/50 hover:bg-secondary active:scale-95 transition-transform"
               >
-                <Plus size={14} />
+                <Plus size={12} />
               </button>
             </div>
           </div>
-          <Progress value={(waterIntake / waterGoal) * 100} className="h-3" indicatorColor={waterBarColor} />
         </div>
         
         {/* Sono */}
-        <div className="bg-secondary/10 p-6 rounded-3xl border border-secondary/20">
-          <div className="flex justify-between text-sm text-muted-foreground mb-3 font-medium uppercase tracking-widest">
-            <span className="flex items-center gap-2">
-              <Moon size={16} className={iconAccentClass} /> Sono Otimizado
+        <div className="bg-secondary/10 p-5 rounded-3xl border border-secondary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle done={sleepDone} color={sleepBarColor} />
+              <div>
+                <span className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted-foreground">
+                  <Moon size={14} className={iconAccentClass} /> Sono
+                </span>
+                <span className="text-xs text-muted-foreground/60">{sleepHours} / {sleepGoal}h</span>
+              </div>
+            </div>
+            <span className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full ${sleepDone ? "bg-green-500/20 text-green-400" : "bg-muted/20 text-muted-foreground"}`}>
+              {sleepDone ? "Concluído" : "Pendente"}
             </span>
-            <span className="font-black text-foreground">{sleepHours} / {sleepGoal}h</span>
           </div>
-          <Progress value={(sleepHours / sleepGoal) * 100} className="h-3" indicatorColor={sleepBarColor} />
         </div>
 
         {/* ── Histórico 7 Dias ── */}

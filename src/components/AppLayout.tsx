@@ -13,10 +13,9 @@ const AppLayout = ({ dishonorMode, setDishonorMode }: AppLayoutProps) => {
   const { pushState, requestPermission } = usePushNotifications();
   const location = useLocation();
 
-  // Hide top bar on chat pages and the main dashboard (they have their own headers)
+  // Hide top bar only on active chat conversation pages (they have their own headers)
   const isChatConversation = /^\/aluno\/chat\/[^/]+/.test(location.pathname);
-  const isDashboard = location.pathname === "/aluno" || location.pathname === "/aluno/";
-  const hideHeader = isChatConversation || isDashboard;
+  const hideHeader = isChatConversation;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

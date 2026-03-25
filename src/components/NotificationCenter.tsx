@@ -27,16 +27,25 @@ const NotificationCenter = () => {
   const { data: notifications } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user!.id)
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (error) {
+          console.warn("Notifications table not ready:", error.message);
+          return [];
+        }
+        return data ?? [];
+      } catch (e) {
+        console.warn("Notifications fetch failed:", e);
+        return [];
+      }
     },
     enabled: !!user,
+    retry: false,
   });
 
   // Realtime subscription
