@@ -7,7 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import {
   Heart, MessageCircle, Dumbbell, Award, Flame, Trophy,
   MoreHorizontal, User, Flag, Send, ChevronRight,
-  TrendingUp, Users, Star, Loader2, Plus, X
+  TrendingUp, Users, Star, Loader2, Plus, X, ListChecks
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -61,7 +61,28 @@ function ProfileModal({ userId, onClose }: { userId: string; onClose: () => void
     queryKey: ["public-profile", userId],
     queryFn: async () => {
       const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-      return data;
+      
+      const { data: flame } = await supabase.from("flame_status").select("streak").eq("user_id", userId).maybeSingle();
+      
+      const { count: workoutsCount } = await supabase
+        .from("workouts")
+        .select("id", { count: 'exact', head: true })
+        .eq("user_id", userId)
+        .not("finished_at", "is", null);
+
+      const { data: habits } = await supabase
+        .from("daily_habits")
+        .select("completed_meals")
+        .eq("user_id", userId);
+        
+      const dietsCount = (habits || []).reduce((acc: number, curr: any) => acc + (curr.completed_meals?.length && curr.completed_meals.length > 3 ? 1 : 0), 0);
+
+      return {
+        ...data,
+        streakDays: flame?.streak || 0,
+        workoutsCount: workoutsCount || 0,
+        dietsCount
+      };
     },
   });
 
@@ -99,17 +120,27 @@ function ProfileModal({ userId, onClose }: { userId: string; onClose: () => void
                 <h3 className="font-cinzel text-lg font-bold text-foreground">{profile?.nome || "—"}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{profile?.email || ""}</p>
               </div>
-              <div className="flex gap-6 mt-2">
-                <div className="text-center">
-                  <p className="text-xl font-black text-primary">{profile?.hustle_points ?? 0}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">pontos</p>
+              <div className="grid grid-cols-4 gap-2 mt-4 w-full">
+                <div className="text-center bg-secondary/50 rounded-xl p-2">
+                  <Flame size={16} className="mx-auto text-orange-500 mb-1" />
+                  <p className="text-base font-black text-foreground">{profile?.streakDays ?? 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Dias</p>
                 </div>
-                {profile?.peso && (
-                  <div className="text-center">
-                    <p className="text-xl font-black text-foreground">{profile.peso}kg</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">peso</p>
-                  </div>
-                )}
+                <div className="text-center bg-secondary/50 rounded-xl p-2">
+                  <Dumbbell size={16} className="mx-auto text-blue-500 mb-1" />
+                  <p className="text-base font-black text-foreground">{profile?.workoutsCount ?? 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Treinos</p>
+                </div>
+                <div className="text-center bg-secondary/50 rounded-xl p-2">
+                  <ListChecks size={16} className="mx-auto text-green-500 mb-1" />
+                  <p className="text-base font-black text-foreground">{profile?.dietsCount ?? 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Dietas</p>
+                </div>
+                <div className="text-center bg-secondary/50 rounded-xl p-2">
+                  <Trophy size={16} className="mx-auto text-yellow-500 mb-1" />
+                  <p className="text-base font-black text-foreground">{profile?.hustle_points ?? 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Pontos</p>
+                </div>
               </div>
             </div>
           )}
@@ -352,6 +383,18 @@ export default function Comunidade() {
   const queryClient = useQueryClient();
   const [profileModal, setProfileModal] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"feed" | "ranking">("feed");
+  const { user } = useAuth();
+  
+  const { data: flame } = useQuery({
+    queryKey: ["my-flame-status-ribbon", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return { streak: 0 };
+      const { data } = await supabase.from("flame_status").select("streak").eq("user_id", user.id).maybeSingle();
+      return data || { streak: 0 };
+    },
+    enabled: !!user,
+  });
+  const currentStreak = flame?.streak || 0;
 
   const {
     data,
@@ -394,6 +437,30 @@ export default function Comunidade() {
                 {tab === "feed" ? <span className="flex items-center gap-1"><Users size={12} /> Feed</span> : <span className="flex items-center gap-1"><Star size={12} /> Ranking</span>}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* ── Streak Ribbon ── */}
+        <div className="w-full bg-card border border-border rounded-2xl p-4 shadow-sm mb-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 mb-3">
+             <Flame size={16} className="text-orange-500" />
+             <h3 className="font-cinzel text-sm font-bold text-foreground tracking-tight uppercase">Trilho de Ofensiva</h3>
+             <span className="text-xs font-black text-orange-500 ml-auto bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20">{currentStreak} Dias</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-max pb-1">
+            {Array.from({ length: 30 }, (_, i) => i + 1).map(day => {
+              const isCompleted = day <= currentStreak;
+              const isCurrent = day === currentStreak + 1;
+              return (
+                <div key={day} className="flex flex-col items-center gap-1.5 group cursor-default">
+                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black transition-colors ${isCompleted ? "bg-orange-500 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]" : isCurrent ? "bg-secondary border-2 border-orange-500/50 text-orange-500" : "bg-secondary/50 text-muted-foreground border border-border hover:bg-secondary"}`}>
+                     {isCompleted ? (
+                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                     ) : day}
+                   </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

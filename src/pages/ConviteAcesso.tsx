@@ -93,8 +93,8 @@ const ConviteAcesso = () => {
       }
     }
 
-    toast.success("Conta criada com sucesso! Vamos começar sua anamnese.");
-    navigate("/onboarding");
+    toast.success("Conta criada com sucesso! Redirecionando para seu desafio.");
+    navigate("/aluno/desafio");
   };
 
   if (loading) {

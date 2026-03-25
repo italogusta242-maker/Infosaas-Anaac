@@ -20,28 +20,43 @@ export type HustleAction =
   | "community_post" 
   | "community_reaction_bonus";
 
-export const pointsConfig: Record<HustleAction, number> = {
-  workout_complete: 10,
-  workout_weekly_bonus: 20,
-  workout_streak: 3,
-  diet_log: 5,
-  diet_calories: 5,
-  diet_protein: 3,
-  diet_all_macros: 5,
-  diet_weekly_bonus: 15,
-  habit_water: 5,
-  habit_sleep: 5,
-  habit_combined_bonus: 3,
-  lesson_complete: 8,
-  module_complete: 15,
-  community_post: 2,
-  community_reaction_bonus: 3,
+const getPointsConfig = (): Record<HustleAction, number> => {
+  const saved = localStorage.getItem("custom_scoring_rules");
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error("Error parsing custom scoring rules", e);
+    }
+  }
+  return {
+    workout_complete: 10,
+    workout_weekly_bonus: 20,
+    workout_streak: 3,
+    diet_log: 5,
+    diet_calories: 5,
+    diet_protein: 3,
+    diet_all_macros: 5,
+    diet_weekly_bonus: 15,
+    habit_water: 5,
+    habit_sleep: 5,
+    habit_combined_bonus: 3,
+    lesson_complete: 8,
+    module_complete: 15,
+    community_post: 2,
+    community_reaction_bonus: 3,
+  };
 };
+
+export const pointsConfig = getPointsConfig();
 
 export function useHustlePoints() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const isMock = localStorage.getItem("USE_MOCK") === "true";
+  
+  // Dynamic config for current session
+  const currentConfig = getPointsConfig();
 
   const { data: totalPoints = 0 } = useQuery({
     queryKey: ["hustle-points-total", user?.id],
@@ -61,10 +76,10 @@ export function useHustlePoints() {
 
   const awardPointsMutation = useMutation({
     mutationFn: async ({ action, groupId, metadata = {} }: { action: HustleAction; groupId?: string; metadata?: any }) => {
-      if (isMock) return pointsConfig[action];
+      if (isMock) return currentConfig[action];
       if (!user) return;
 
-      const points = pointsConfig[action];
+      const points = currentConfig[action];
       
       // Check if already awarded today for non-stackable actions
       const date = new Date().toISOString().split('T')[0];

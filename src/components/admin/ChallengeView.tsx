@@ -340,12 +340,27 @@ export const ChallengeView = ({
                    <div className="lg:col-span-2 space-y-6">
                       <div className="aspect-video bg-background rounded-3xl border border-white/5 overflow-hidden shadow-2xl relative flex items-center justify-center">
                          {activeLesson?.video_url || selectedModule.video_url ? (
-                           <iframe 
-                             src={activeLesson?.video_url || selectedModule.video_url}
-                             className="w-full h-full"
-                             allow="autoplay; fullscreen; picture-in-picture"
-                             allowFullScreen
-                           />
+                           (() => {
+                             const vUrl = activeLesson?.video_url || selectedModule.video_url;
+                             const ytId = vUrl?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/)?.[1];
+                             if (ytId) {
+                               return (
+                                 <a href={`https://youtube.com/watch?v=${ytId}`} target="_blank" rel="noreferrer" className="w-full h-full relative group block">
+                                   <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-all">
+                                      <Play size={64} className="text-white drop-shadow-lg group-hover:scale-110 transition-transform" />
+                                      <span className="absolute bottom-4 right-4 bg-black/80 px-3 py-1 text-[10px] font-black tracking-widest text-white rounded cursor-pointer">ASSISTIR (NOVA GUIA)</span>
+                                   </div>
+                                 </a>
+                               );
+                             }
+                             return (
+                               <a href={vUrl} target="_blank" rel="noreferrer" className="w-full h-full flex flex-col items-center justify-center bg-black/50 hover:bg-black/30 transition-all group">
+                                   <Play size={64} className="text-white mb-4 group-hover:scale-110 transition-transform" />
+                                   <span className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 border border-white/20 rounded-full text-white">Abrir Mídia Externa</span>
+                               </a>
+                             );
+                           })()
                          ) : isEdit ? (
                              <div className="flex flex-col items-center gap-4 text-white/10">
                                 <Play size={64} />

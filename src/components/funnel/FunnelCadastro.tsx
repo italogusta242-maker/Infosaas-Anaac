@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { useFunnelStore } from "@/stores/useFunnelStore";
+import InsanoLogo from "@/components/InsanoLogo";
 
 const FunnelCadastro = () => {
   const { setUser, next } = useFunnelStore();
@@ -105,13 +106,9 @@ const FunnelCadastro = () => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-              className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, hsl(342 100% 57%), hsl(342 100% 47%))",
-                boxShadow: "0 0 40px hsl(342 100% 57% / 0.3)",
-              }}
+              className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md"
             >
-              <User className="w-8 h-8 text-white" />
+              <InsanoLogo size={48} />
             </motion.div>
             <h1 className="text-2xl font-bold text-white mb-1 font-sans">
               Crie sua conta

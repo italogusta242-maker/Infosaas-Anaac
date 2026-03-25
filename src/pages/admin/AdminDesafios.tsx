@@ -85,6 +85,13 @@ const AdminDesafios = () => {
         .eq("challenge_id", localChallenge.id)
         .order("sort_order", { ascending: true });
       if (error) throw error;
+      if (data) {
+         data.forEach((mod: any) => {
+           if (mod.lessons && Array.isArray(mod.lessons)) {
+             mod.lessons.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+           }
+         });
+      }
       return data as any[];
     },
     enabled: !!localChallenge?.id && view === "builder",

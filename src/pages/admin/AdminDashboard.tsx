@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PendingStudentsPanel from "@/components/admin/PendingStudentsPanel";
+import ScoringRulesPanel from "@/components/admin/ScoringRulesPanel";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { subDays, format, startOfDay, differenceInDays, parseISO } from "date-fns";
@@ -378,6 +379,10 @@ const AdminDashboard = () => {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        <ScoringRulesPanel />
       </div>
 
       {/* Detail Modal */}

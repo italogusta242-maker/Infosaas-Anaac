@@ -22,6 +22,7 @@ interface PlanForm {
   max_installments: string;
   description: string;
   specialist_limitation: string;
+  target_group: string[];
 }
 
 const emptyForm: PlanForm = {
@@ -33,6 +34,7 @@ const emptyForm: PlanForm = {
   max_installments: "1",
   description: "",
   specialist_limitation: "nenhum",
+  target_group: ["Global"],
 };
 
 const AdminPlanosPagamento = () => {
@@ -64,6 +66,7 @@ const AdminPlanosPagamento = () => {
         max_installments: form.payment_method === "CREDIT_CARD" && form.billing_type === "one_time" ? parseInt(form.max_installments) : 1,
         description: form.description || null,
         specialist_limitation: form.specialist_limitation,
+        target_group: form.target_group?.length ? form.target_group.join(",") : "Global",
       } as any;
 
       if (editingId) {
@@ -134,6 +137,7 @@ const AdminPlanosPagamento = () => {
       max_installments: String(plan.max_installments || 1),
       description: plan.description || "",
       specialist_limitation: plan.specialist_limitation || "nenhum",
+      target_group: plan.target_group ? plan.target_group.split(",") : ["Global"],
     });
     setDialogOpen(true);
   };
@@ -394,6 +398,27 @@ const AdminPlanosPagamento = () => {
                   <SelectItem value="apenas_preparador">Apenas Preparador</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-1.5 pt-2">
+              <label className="text-xs font-medium text-muted-foreground">Turmas / Cohorts (Liberação de Acesso)</label>
+              <div className="flex gap-2 flex-wrap">
+                {["Global", "Desafio30", "TurmaElite", "Mentoria"].map(g => (
+                   <label key={g} className="flex items-center gap-1.5 text-xs bg-secondary/50 px-3 py-1.5 rounded-full cursor-pointer border hover:border-primary/50 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        className="rounded-sm border-border text-primary focus:ring-primary w-3 h-3"
+                        checked={(form.target_group || []).includes(g)} 
+                        onChange={(e) => {
+                           const current = form.target_group || [];
+                           if (e.target.checked) setForm({...form, target_group: [...current, g] });
+                           else setForm({...form, target_group: current.filter(x => x !== g) });
+                        }} 
+                      />
+                      {g}
+                   </label>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-1.5">

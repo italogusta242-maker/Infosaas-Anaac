@@ -14,8 +14,7 @@ const FunnelVSL = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [showUnmuteOverlay, setShowUnmuteOverlay] = useState(true);
-  const [fakeProgress, setFakeProgress] = useState(0);
-  const [showProgressBar, setShowProgressBar] = useState(true);
+  const [realProgress, setRealProgress] = useState(0);
   const [showCTA, setShowCTA] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,19 +68,8 @@ const FunnelVSL = () => {
 
     const handleTimeUpdate = () => {
       if (!video.duration) return;
-      const realProgress = video.currentTime / video.duration;
-
-      // From 0–50% of real video → bar rushes to 50% visual (gives "short video" feel)
-      // After 50% of real video → bar freezes at 50% and fades out
-      if (realProgress <= 0.5) {
-        // Map real 0→0.5 to visual 0→0.5 (accelerated because bar moves fast early on)
-        const mapped = (realProgress / 0.5) * 0.5;
-        setFakeProgress(mapped);
-      } else if (showProgressBar) {
-        // Freeze at 50% and fade out
-        setFakeProgress(0.5);
-        setTimeout(() => setShowProgressBar(false), 400);
-      }
+      const progressRatio = video.currentTime / video.duration;
+      setRealProgress(progressRatio);
 
       // Show CTA 15s before end
       const timeLeft = video.duration - video.currentTime;
@@ -134,27 +122,24 @@ const FunnelVSL = () => {
       <AnimatePresence>
         {showUnmuteOverlay && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             onClick={handleTapToUnmute}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/30 backdrop-blur-sm cursor-pointer"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm cursor-pointer"
           >
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}
+              className="bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/30 rounded-2xl p-6 flex flex-col items-center gap-4 max-w-[80vw]"
             >
-              {!isPlaying ? (
-                <Play className="w-8 h-8 text-white ml-1" fill="white" />
-              ) : (
-                <Volume2 className="w-8 h-8 text-white" />
-              )}
+              <Volume2 className="w-12 h-12 text-white" />
+              <div className="text-center">
+                <span className="block text-white/80 text-xs font-bold uppercase tracking-[0.2em] mb-1">Seu vídeo já começou</span>
+                <span className="block text-white text-xl font-black uppercase tracking-wide">Clique para Ativar o Som</span>
+              </div>
             </motion.div>
-            <span className="text-white/90 text-sm font-medium tracking-wide">
-              {!isPlaying ? "Toque para assistir" : "🔊 Toque para ligar o som"}
-            </span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -173,30 +158,19 @@ const FunnelVSL = () => {
         </button>
       )}
 
-      {/* ── Fake progress bar ── */}
-      <AnimatePresence>
-        {showProgressBar && (
+      {/* ── Real linear progress bar ── */}
+      <div className="absolute top-0 left-0 right-0 z-30 h-1.5">
+        <div className="h-full bg-white/10">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="absolute top-0 left-0 right-0 z-30 h-1"
-          >
-            <div className="h-full bg-white/10">
-              <motion.div
-                className="h-full rounded-r-full"
-                style={{
-                  width: `${fakeProgress * 100}%`,
-                  background:
-                    "linear-gradient(90deg, hsl(342 100% 57%), hsl(342 100% 67%))",
-                }}
-                transition={{ duration: 0.3, ease: "linear" }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            className="h-full rounded-r-full"
+            style={{
+              width: `${realProgress * 100}%`,
+              background: "linear-gradient(90deg, hsl(342 100% 57%), hsl(342 100% 67%))",
+            }}
+            transition={{ duration: 0.1, ease: "linear" }}
+          />
+        </div>
+      </div>
 
       {/* ── CTA Button ── */}
       <AnimatePresence>

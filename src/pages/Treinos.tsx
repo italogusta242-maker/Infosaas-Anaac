@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { SFX } from "@/hooks/useSoundEffects";
 import { optimisticFlameUpdate } from "@/lib/flameOptimistic";
-import { checkAndUpdateFlame } from "@/lib/flameMotor";
+import { checkAndUpdateFlame, triggerMilestonePost } from "@/lib/flameMotor";
 import { onWorkoutStart, onWorkoutFinish } from "@/lib/coachNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -411,6 +411,7 @@ const RunningModule = ({ workoutHistory, user, queryClient }: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-history"] });
+      queryClient.invalidateQueries({ queryKey: ["real-performance"] });
       setLogOpen(false);
       setDistance("");
       setDuration("");
@@ -781,11 +782,15 @@ const Treinos = () => {
     onSuccess: () => {
       // REGRA 4: NO invalidateQueries for flame — only workout-history is safe
       queryClient.invalidateQueries({ queryKey: ["workout-history"] });
+      queryClient.invalidateQueries({ queryKey: ["real-performance"] });
       // Background: persist flame to DB
       if (user) {
         checkAndUpdateFlame(user.id);
       }
       awardPoints({ action: "workout_complete" });
+      if (user) {
+        triggerMilestonePost(user.id, "workout");
+      }
     },
   });
 
@@ -1109,17 +1114,26 @@ const Treinos = () => {
   if (view === "list") {
     return (
       <div className="p-4 max-w-lg mx-auto pb-24">
-        <div className="flex items-center justify-between pt-2 mb-1">
-          <h1 className="font-cinzel text-2xl font-bold text-foreground">TREINOS</h1>
+        {/* Mimic Dieta top header style */}
+        <div className="flex items-center justify-between mb-6 pt-2">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate("/aluno")} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft size={24} />
+            </button>
+            <div className="flex items-center gap-2">
+              <Dumbbell size={20} className="text-accent" />
+              <span className="font-cinzel font-bold text-foreground">SALA DE TREINOS</span>
+            </div>
+          </div>
+          
           <button
             onClick={() => setView("history")}
-            className="flex items-center gap-1.5 bg-card border border-border rounded-lg px-3 py-1.5 hover:border-primary/30 transition-colors"
+            className="flex items-center gap-1.5 bg-card/50 border border-border rounded-lg px-3 py-1.5 hover:border-accent/40 transition-colors"
           >
             <History size={14} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Histórico</span>
           </button>
         </div>
-        <p className="text-sm text-muted-foreground mb-6">Seu plano de treinamento</p>
 
         {/* Toggle Treino / Corrida */}
         <div className="flex bg-secondary/50 p-1 rounded-xl mb-6">
@@ -1144,17 +1158,17 @@ const Treinos = () => {
         {/* Plan in preparation notice */}
         {!plan && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-6 bg-card border border-border rounded-xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center space-y-6"
           >
             <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center border border-accent/20">
               <Dumbbell size={40} className="text-accent" />
             </div>
             <div>
-              <h2 className="font-sans text-xl font-bold text-foreground mb-2 tracking-tight">SEU DESAFIO COMEÇA AGORA</h2>
+              <h2 className="font-sans text-xl font-bold text-foreground mb-2 tracking-tight uppercase text-balance">SELECIONE O SEU PLANO NA ÁREA DE MEMBROS</h2>
               <p className="text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
-                Selecione o seu plano na área de membros para liberar seu cronograma de {activeTab === "treino" ? "treinos" : "corridas"}.
+                Acesse a área de membros para liberar seu cronograma de {activeTab === "treino" ? "treinos" : "corridas"}.
               </p>
             </div>
             <motion.button

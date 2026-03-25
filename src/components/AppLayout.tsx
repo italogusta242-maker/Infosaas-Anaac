@@ -22,8 +22,10 @@ const AppLayout = ({ dishonorMode, setDishonorMode }: AppLayoutProps) => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar — only NotificationBell. ChatIcon and ProfileIcon removed per spec. */}
       {!hideHeader && (
-        <header className="sticky top-0 z-40 flex items-center justify-end px-4 py-2 bg-background/80 backdrop-blur border-b border-border/50">
-          <NotificationCenter />
+        <header className="sticky top-0 z-40 flex items-center justify-end w-full rounded-none px-0 py-2 bg-background/80 backdrop-blur border-b border-border/50">
+          <div className="pr-4">
+            <NotificationCenter />
+          </div>
         </header>
       )}
       <PushPermissionBanner pushState={pushState} onRequestPermission={requestPermission} />

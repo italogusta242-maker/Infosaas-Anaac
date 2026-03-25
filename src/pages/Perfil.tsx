@@ -24,11 +24,7 @@ const Perfil = () => {
   const queryClient = useQueryClient();
   const nome = profile?.nome ?? "MIRI";
   
-  // Mock data for completed months
-  const completedMonths = [
-    { title: "Janeiro ✓", id: 1 },
-    { title: "Fevereiro ✓", id: 2 }
-  ];
+  // Legacy achievements removed
 
   const [editOpen, setEditOpen] = useState(false);
   const [subscriptionOpen, setSubscriptionOpen] = useState(false);
@@ -106,10 +102,13 @@ const Perfil = () => {
     return "Treino e Dieta";
   };
   const planName = derivePlanName();
-  const planLabel = `Anaac Club ${planName}`;
+  const planLabel = `Anac Clube ${planName}`;
 
   // Edit form state
-  const [editForm, setEditForm] = useState({ nome: "", weight: 0, height: 0, targetWeight: 0, age: 0 });
+  const [editForm, setEditForm] = useState({ 
+     nome: "", weight: 0, height: 0, targetWeight: 0, age: 0,
+     medida_peitoral: 0, medida_cintura: 0, medida_bracos: 0, medida_pernas: 0
+  });
 
   useEffect(() => {
     if (profile) {
@@ -119,6 +118,10 @@ const Perfil = () => {
         height: profile.altura ? Number(profile.altura) : 0,
         targetWeight: (profile as any).meta_peso ? Number((profile as any).meta_peso) : 0,
         age: (profile as any).nascimento ? (() => { const a = Math.floor((Date.now() - new Date((profile as any).nascimento).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); return a > 0 && a <= 120 ? a : 0; })() : 0,
+        medida_peitoral: (profile as any).medida_peitoral ? Number((profile as any).medida_peitoral) : 0,
+        medida_cintura: (profile as any).medida_cintura ? Number((profile as any).medida_cintura) : 0,
+        medida_bracos: (profile as any).medida_bracos ? Number((profile as any).medida_bracos) : 0,
+        medida_pernas: (profile as any).medida_pernas ? Number((profile as any).medida_pernas) : 0,
       });
     }
   }, [profile]);
@@ -139,6 +142,11 @@ const Perfil = () => {
     };
     if (editForm.nome.trim()) updates.nome = editForm.nome.trim();
     if (nascimentoFromAge) updates.nascimento = nascimentoFromAge;
+    // Add additional body measurements
+    if (editForm.medida_peitoral > 0) updates.medida_peitoral = String(editForm.medida_peitoral);
+    if (editForm.medida_cintura > 0) updates.medida_cintura = String(editForm.medida_cintura);
+    if (editForm.medida_bracos > 0) updates.medida_bracos = String(editForm.medida_bracos);
+    if (editForm.medida_pernas > 0) updates.medida_pernas = String(editForm.medida_pernas);
     const { error } = await supabase
       .from("profiles")
       .update(updates)
@@ -226,17 +234,6 @@ const Perfil = () => {
         </div>
 
         <h2 className="font-cinzel text-xl font-bold text-foreground">{nome.toUpperCase()}</h2>
-        
-        {/* Month Badges */}
-        {completedMonths.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center mt-3 mb-1">
-            {completedMonths.map(m => (
-              <Badge key={m.id} className="bg-accent/20 text-accent border border-accent/30 px-3 py-1 shadow-sm">
-                {m.title}
-              </Badge>
-            ))}
-          </div>
-        )}
 
         <div className="flex items-center gap-2 mt-2">
           <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] font-semibold">
@@ -281,31 +278,25 @@ const Perfil = () => {
         ))}
       </div>
 
-      {/* Histórico de Meses Completados */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-card rounded-xl border border-border p-5 mt-4 group"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-cinzel text-sm font-bold text-foreground">Histórico de Ciclos</h3>
-          <Calendar size={18} className="text-muted-foreground" />
-        </div>
-        <div className="space-y-3">
-           {completedMonths.map(m => (
-             <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/50 hover:border-accent/40 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-                     <Check size={14} />
-                  </div>
-                  <span className="text-sm font-bold text-foreground">{m.title.replace(' ✓', '')}</span>
-                </div>
-                <span className="text-[10px] font-black tracking-widest text-accent uppercase bg-accent/10 px-3 py-1 rounded-full">100% Concluído</span>
-             </div>
-           ))}
-        </div>
-      </motion.div>
+      {/* Edit Biometrics Sheet overlay - will render over the component on setEditOpen */}
+      
+      {/* Detail Biometrics Ext Grid */}
+      <h3 className="font-cinzel text-sm font-bold text-foreground mt-6 mb-2">Medidas de Precisão</h3>
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        {[
+           { label: "Peito", val: editForm.medida_peitoral },
+           { label: "Cintura", val: editForm.medida_cintura },
+           { label: "Braços", val: editForm.medida_bracos },
+           { label: "Pernas", val: editForm.medida_pernas },
+        ].map(m => (
+           <div key={m.label} className="bg-secondary/40 rounded-xl p-3 border border-border flex flex-col items-center">
+             <span className="text-xs font-bold text-foreground mb-1">{m.val > 0 ? `${m.val}cm` : '--'}</span>
+             <span className="text-[9px] text-muted-foreground uppercase">{m.label}</span>
+           </div>
+        ))}
+      </div>
+
+      {/* Legacy History Removed */}
 
       {/* Action Menu */}
       <motion.div
@@ -385,7 +376,34 @@ const Perfil = () => {
                   onChange={(e) => setEditForm({ ...editForm, age: Number(e.target.value) })} />
               </div>
             </div>
-            <Button onClick={handleSave} className="w-full font-bold" disabled={saving}>
+
+            <div className="pt-2">
+              <Label className="text-foreground text-xs font-bold font-cinzel">Medidas Biométricas (Circunferência)</Label>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              <div>
+                <Label className="text-muted-foreground text-xs">Peitoral (cm)</Label>
+                <Input type="number" className="bg-secondary border-border mt-1" value={editForm.medida_peitoral || ""}
+                  onChange={(e) => setEditForm({ ...editForm, medida_peitoral: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Cintura (cm)</Label>
+                <Input type="number" className="bg-secondary border-border mt-1" value={editForm.medida_cintura || ""}
+                  onChange={(e) => setEditForm({ ...editForm, medida_cintura: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Braços (cm)</Label>
+                <Input type="number" className="bg-secondary border-border mt-1" value={editForm.medida_bracos || ""}
+                  onChange={(e) => setEditForm({ ...editForm, medida_bracos: Number(e.target.value) })} />
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Pernas (cm)</Label>
+                <Input type="number" className="bg-secondary border-border mt-1" value={editForm.medida_pernas || ""}
+                  onChange={(e) => setEditForm({ ...editForm, medida_pernas: Number(e.target.value) })} />
+              </div>
+            </div>
+
+            <Button onClick={handleSave} className="w-full font-bold mt-2" disabled={saving}>
               {saving ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>

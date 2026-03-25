@@ -35,8 +35,8 @@ const DashboardHero = ({
               {hasTrainingPlan ? "TREINO DO DIA" : "SEU DESAFIO COMEÇA AGORA"}
             </h2>
             
-            <p className="text-white/80 dark:text-foreground/90 text-sm md:text-base font-medium leading-relaxed max-w-lg uppercase">
-              {hasTrainingPlan ? todayScheduleName : "Acesse o painel e escolha seu novo plano para iniciar os resultados."}
+            <p className="text-white/80 dark:text-foreground/90 text-sm md:text-base font-medium leading-relaxed max-w-lg">
+              Vamos treinar, Miri
             </p>
           </div>
 

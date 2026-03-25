@@ -64,6 +64,10 @@ export async function checkAndUpdateFlame(userId: string): Promise<void> {
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId);
+    
+    if ([7, 14, 21, 30, 50, 100].includes(flame.streak + 1)) {
+      await triggerMilestonePost(userId, "streak", flame.streak + 1);
+    }
   } else if (flame.state === "ativa" && flame.last_approved_date !== todayStr) {
     // Already ativa but new day approved
     await supabase
@@ -74,7 +78,37 @@ export async function checkAndUpdateFlame(userId: string): Promise<void> {
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId);
+
+    if ([7, 14, 21, 30, 50, 100].includes(flame.streak + 1)) {
+      await triggerMilestonePost(userId, "streak", flame.streak + 1);
+    }
   }
+}
+
+/** Automagically insert milestones on Community feed */
+export async function triggerMilestonePost(userId: string, type: 'streak' | 'workout' | 'diet', value?: number) {
+  let content = "";
+  if (type === 'streak') content = `🔥 CHAMA IMPARÁVEL! Acabei de atingir ${value} DIAS de ofensiva seguidos no app!`;
+  else if (type === 'workout') content = `💪 TREINO CONCLUÍDO! Mais um dia de plano pago. Quem vem junto?`;
+  else if (type === 'diet') content = `🥗 DIETA 100%! Bati todas as minhas metas nutricionais de hoje. Foco no processo!`;
+
+  // Anti-flood: se já postou essa milestone HOJE, pula
+  const todayStart = new Date().toISOString().split("T")[0] + "T00:00:00";
+  const prefix = content.substring(0, 10);
+  const { data: recent } = await supabase
+    .from("community_posts")
+    .select("id")
+    .eq("user_id", userId)
+    .like("content", prefix + "%")
+    .gte("created_at", todayStart)
+    .limit(1);
+    
+  if (recent && recent.length > 0) return;
+
+  await supabase.from("community_posts").insert({
+    user_id: userId,
+    content
+  });
 }
 
 async function isDayApprovedClient(userId: string, dateStr: string): Promise<boolean> {

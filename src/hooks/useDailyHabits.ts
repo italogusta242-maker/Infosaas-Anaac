@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getToday } from "@/lib/dateUtils";
 import { optimisticFlameUpdate } from "@/lib/flameOptimistic";
-import { checkAndUpdateFlame } from "@/lib/flameMotor";
+import { checkAndUpdateFlame, triggerMilestonePost } from "@/lib/flameMotor";
 import { onMealToggle } from "@/lib/coachNotifications";
 import { MOCK_HABITS } from "@/lib/mockData";
 import { useHustlePoints } from "./useHustlePoints";
@@ -79,8 +79,13 @@ export function useDailyHabits(date?: string) {
         queryClient.setQueryData(["daily-habits", user?.id, targetDate], context.previousHabits);
       }
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ["real-performance", user.id] });
+      }
+    },
   });
+
 
   const setWater = (liters: number) => {
     const clamped = Math.max(0, Math.min(10, liters));
@@ -133,6 +138,7 @@ export function useDailyHabits(date?: string) {
       // Award Hustle Points for completing all meals (Layer 1: Registration)
       if (!isRemoving && next.length === mealCount) {
         awardPoints({ action: "diet_log" });
+        triggerMilestonePost(user.id, "diet");
       }
     }
   };

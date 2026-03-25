@@ -385,6 +385,10 @@ const FunnelCheckout = () => {
           )}
         </motion.button>
 
+        <p className="text-center text-[10px] text-white/30 font-semibold uppercase tracking-widest mt-4 mb-2">
+          PAGAMENTO 100% SEGURO PROCESSADO POR STRIPE
+        </p>
+
         {/* bottom spacer for scroll */}
         <div className="h-6" />
       </div>

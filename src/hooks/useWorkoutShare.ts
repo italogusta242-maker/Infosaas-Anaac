@@ -24,27 +24,8 @@ export function useWorkoutShare() {
 
       const file = new File([blob], "treino-shape-insano.png", { type: "image/png" });
 
-      // Try native share first (works best on mobile)
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Treino Concluído",
-          text: "Mais um dia de vitória no Miris No Foco VIP! 🔥",
-        });
-        return;
-      }
+      // Fallback/Force direct download for deterministic behavior
 
-      // Desktop: try clipboard then fallback to download
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": blob }),
-        ]);
-        // If clipboard worked, also download as backup
-      } catch {
-        // Clipboard not supported (iOS Safari, etc.) — just download
-      }
-
-      // Fallback: always download the file
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

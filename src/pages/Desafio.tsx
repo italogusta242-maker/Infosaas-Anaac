@@ -585,13 +585,28 @@ const Challenge = () => {
                       <>
                         <div className="aspect-video bg-obsidian rounded-3xl border border-border overflow-hidden shadow-2xl relative flex items-center justify-center">
                           {activeLesson.video_url ? (
-                            <iframe 
-                              className="w-full h-full"
-                              src={activeLesson.video_url}
-                              title="Lesson Player"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                              allowFullScreen
-                            />
+                            (() => {
+                              const ytId = activeLesson.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/)?.[1];
+                              if (ytId) {
+                                return (
+                                  <a href={`https://youtube.com/watch?v=${ytId}`} target="_blank" rel="noreferrer" className="w-full h-full relative group block overflow-hidden rounded-3xl">
+                                    <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center group-hover:bg-black/30 transition-all">
+                                      <div className="w-20 h-16 bg-red-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_25px_rgba(220,38,38,0.5)]">
+                                        <Play size={32} className="text-white fill-white" />
+                                      </div>
+                                      <span className="mt-4 bg-black/60 backdrop-blur border border-white/10 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-full text-white/90">Assistir Aula Original</span>
+                                    </div>
+                                  </a>
+                                );
+                              }
+                              return (
+                                <a href={activeLesson.video_url} target="_blank" rel="noreferrer" className="w-full h-full flex flex-col items-center justify-center bg-[#0a0a0a] hover:bg-[#1a1a1a] transition-all group">
+                                    <Play size={48} className="text-accent mb-4 group-hover:scale-110 transition-transform" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 border border-accent/20 text-accent rounded-full bg-accent/5">Acessar Videoexterno</span>
+                                </a>
+                              );
+                            })()
                           ) : activeLesson.pdf_url ? (
                             <div className="flex flex-col items-center gap-6 p-12 text-center">
                                <div className="w-20 h-20 rounded-3xl bg-accent/20 flex items-center justify-center text-accent shadow-glow">
@@ -781,43 +796,28 @@ const Challenge = () => {
         </div>
 
 
-        {/* Comments Section */}
-        <div className="mt-20 border-t border-white/5 pt-20">
-           <div className="flex items-center gap-4 mb-12">
-              <MessageSquare className="text-accent" size={32} />
-              <h3 className="text-2xl font-black italic uppercase tracking-tighter">Comentários do Desafio (Geral)</h3>
+        {/* Comments Section (Static Bottom) */}
+        <div className="w-full mt-8 bg-card border border-border rounded-3xl p-6 flex flex-col shadow-sm mb-20">
+           <div className="flex items-center justify-between mb-4 shrink-0 px-2">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="text-accent" size={18} />
+                <h3 className="text-sm font-black italic uppercase tracking-wider">Comunidade VIP</h3>
+              </div>
+              <span className="text-xs text-muted-foreground">{lessonComments.length} comentários</span>
            </div>
 
-           <div className="bg-white/5 p-8 rounded-3xl border border-white/10 mb-12">
-              <textarea 
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Compartilhe sua experiência nesta aula..." 
-                className="w-full bg-background/40 border border-border rounded-2xl p-6 text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-accent/40 transition-all min-h-[150px]"
-              />
-              <div className="flex justify-end mt-4">
-                  <button 
-                    disabled={!newComment.trim() || addCommentMutation.isPending}
-                    onClick={() => addCommentMutation.mutate(newComment)}
-                    className="bg-accent text-white px-10 py-3 rounded-xl font-bold hover:scale-105 transition-all shadow-lg shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                     {addCommentMutation.isPending ? 'ENVIANDO...' : 'ENVIAR COMENTÁRIO'}
-                  </button>
-               </div>
-            </div>
-
-            <div className="space-y-6">
+           <div className="flex-1 overflow-y-auto w-full no-scrollbar space-y-4 px-2 mb-4">
                {lessonComments.length === 0 ? (
-                 <div className="text-center py-10 text-muted-foreground italic text-sm">Nenhum comentário ainda. Seja a primeira a comentar!</div>
+                 <div className="text-center py-6 text-muted-foreground italic text-xs">Seja a primeira a comentar!</div>
                ) : (
                  lessonComments.map((comment) => (
                    <motion.div 
-                     initial={{ opacity: 0, x: -10 }}
-                     animate={{ opacity: 1, x: 0 }}
+                     initial={{ opacity: 0, scale: 0.95 }}
+                     animate={{ opacity: 1, scale: 1 }}
                      key={comment.id} 
-                     className="flex gap-6 p-6 rounded-3xl border border-white/5 h-fit bg-gradient-to-r from-white/5 to-transparent"
+                     className="flex gap-3"
                    >
-                     <div className="w-12 h-12 rounded-full overflow-hidden bg-accent/20 flex items-center justify-center text-accent font-black border border-accent/20">
+                     <div className="w-8 h-8 rounded-full overflow-hidden bg-accent/20 flex items-center justify-center text-accent font-black border border-accent/20 shrink-0 text-xs">
                        {comment.profiles?.avatar_url ? (
                          <img src={comment.profiles.avatar_url} alt={comment.profiles.nome} className="w-full h-full object-cover" />
                        ) : (
@@ -825,19 +825,38 @@ const Challenge = () => {
                        )}
                      </div>
                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-bold text-accent">{comment.profiles?.nome || 'Aluna Miri'}</span>
-                          <span className="text-xs text-white/20">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="font-bold text-accent text-xs">{comment.profiles?.nome || 'Aluna Miri'}</span>
+                          <span className="text-[10px] text-white/30">
                             {new Date(comment.created_at).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
+                        <p className="text-white/80 text-xs leading-relaxed">
                           {comment.content}
                         </p>
                      </div>
                    </motion.div>
                  ))
                )}
+            </div>
+
+            {/* Input Box Static Bottom */}
+            <div className="shrink-0 flex gap-2 pt-2 border-t border-white/5 px-2">
+              <input 
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && newComment.trim() && addCommentMutation.mutate(newComment)}
+                placeholder="Adicione um comentário..." 
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 text-xs text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-accent/40 transition-colors h-10"
+              />
+              <button 
+                disabled={!newComment.trim() || addCommentMutation.isPending}
+                onClick={() => addCommentMutation.mutate(newComment)}
+                className="bg-accent text-white h-10 px-5 rounded-full font-bold text-xs hover:scale-105 transition-all shadow-md shadow-accent/20 disabled:opacity-50 disabled:hover:scale-100 uppercase tracking-wider shrink-0"
+              >
+                 {addCommentMutation.isPending ? '...' : 'Enviar'}
+              </button>
             </div>
         </div>
 
