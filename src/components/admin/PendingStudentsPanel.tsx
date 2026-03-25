@@ -249,7 +249,12 @@ const PendingStudentsPanel = () => {
       const { data, error } = await supabase.functions.invoke("admin-delete-user", {
         body: { user_id: studentId },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes("Failed to send a request") || error.message?.includes("404")) {
+          throw new Error("Função 'admin-delete-user' não encontrada. Execute 'supabase functions deploy admin-delete-user' no terminal.");
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {

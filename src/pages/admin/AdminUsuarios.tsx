@@ -465,14 +465,20 @@ const AdminUsuarios = () => {
           skipOnboarding: newUser.role === "user" ? newUser.skipOnboarding : true,
         },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes("Failed to send a request") || error.message?.includes("404")) {
+          throw new Error("Função de borda 'admin-create-user' não encontrada ou não deployada. Certifique-se de executar 'supabase functions deploy admin-create-user' no terminal.");
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       toast.success(`Conta criada para ${newUser.nome}!`);
       setNewUser({ nome: "", email: "", password: "", telefone: "", cpf: "", role: "user", skipOnboarding: false });
       setCreateOpen(false);
       fetchAlunos();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao criar conta");
+      console.error("Erro na criação:", err);
+      toast.error(err.message || "Erro ao criar conta. Verifique se as Edge Functions foram deployadas.");
     } finally {
       setCreating(false);
     }
@@ -708,7 +714,12 @@ const AdminUsuarios = () => {
       if (editUser.password) body.password = editUser.password;
 
       const { data, error } = await supabase.functions.invoke("admin-edit-user", { body });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes("Failed to send a request") || error.message?.includes("404")) {
+          throw new Error("Função de borda 'admin-edit-user' não encontrada. Execute 'supabase functions deploy admin-edit-user' no terminal.");
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
 
       toast.success("Dados atualizados com sucesso!");
@@ -729,7 +740,12 @@ const AdminUsuarios = () => {
       const { data, error } = await supabase.functions.invoke("admin-delete-user", {
         body: { user_id: userId },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes("Failed to send a request") || error.message?.includes("404")) {
+          throw new Error("Função de borda 'admin-delete-user' não encontrada. Execute 'supabase functions deploy admin-delete-user' no terminal.");
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       toast.success(`Usuário ${userName} excluído com sucesso`);
       setAlunos((prev) => prev.filter((a) => a.id !== userId));
@@ -823,18 +839,11 @@ const AdminUsuarios = () => {
                       <Label className="text-xs">CPF</Label>
                       <Input placeholder="000.000.000-00" value={newUser.cpf} onChange={(e) => setField("cpf", e.target.value)} className="bg-background border-border" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Papel *</Label>
-                      <Select value={newUser.role} onValueChange={(v) => setField("role", v)}>
-                        <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">Aluno</SelectItem>
-                          <SelectItem value="nutricionista">Nutricionista</SelectItem>
-                          <SelectItem value="personal">Preparador Físico</SelectItem>
-                          <SelectItem value="closer">Closer</SelectItem>
-                          <SelectItem value="cs">CS</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-1.5 opacity-60 grayscale pointer-events-none cursor-not-allowed">
+                      <Label className="text-xs text-muted-foreground/50">Papel</Label>
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/20 border border-border/50 text-xs font-bold text-accent">
+                        ALUNO
+                      </div>
                     </div>
                   </div>
                   {newUser.role === "user" && (
@@ -871,18 +880,11 @@ const AdminUsuarios = () => {
                     <Label className="text-xs">Senha Inicial *</Label>
                     <Input type="password" placeholder="Mínimo 6 caracteres" value={newPro.password} onChange={(e) => setNewPro(p => ({ ...p, password: e.target.value }))} className="bg-background border-border" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Cargo/Papel *</Label>
-                    <Select value={newPro.role} onValueChange={(v) => setNewPro(p => ({ ...p, role: v }))}>
-                      <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="personal">Personal Trainer</SelectItem>
-                        <SelectItem value="nutricionista">Nutricionista</SelectItem>
-                        <SelectItem value="closer">Closer (Vendas/Triagem)</SelectItem>
-                        <SelectItem value="cs">CS (Suporte)</SelectItem>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-1.5 opacity-60 grayscale pointer-events-none cursor-not-allowed">
+                    <Label className="text-xs text-muted-foreground/50">Papel / Cargo</Label>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/20 border border-border/50 text-xs font-bold text-accent">
+                      ALUNO (PADRÃO)
+                    </div>
                   </div>
                   <Button onClick={handleCreatePro} disabled={creating} className="w-full mt-2">
                     {creating ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}
@@ -1555,19 +1557,25 @@ const AdminUsuarios = () => {
                     <Label className="text-xs">CPF</Label>
                     <Input placeholder="000.000.000-00" value={editUser.cpf} onChange={(e) => setEditUser(u => ({ ...u, cpf: e.target.value }))} className="bg-background border-border" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Status</Label>
-                    <Select value={editUser.status} onValueChange={(v) => setEditUser(u => ({ ...u, status: v }))}>
-                      <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pendente_onboarding">Pendente Onboarding</SelectItem>
-                        <SelectItem value="pendente">Pendente</SelectItem>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="inativo">Inativo</SelectItem>
-                        <SelectItem value="cancelado">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-1.5 opacity-60 grayscale pointer-events-none cursor-not-allowed">
+                    <Label className="text-xs text-muted-foreground/50">Papel</Label>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/20 border border-border/50 text-xs font-bold text-accent">
+                      ALUNO
+                    </div>
                   </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Status</Label>
+                  <Select value={editUser.status} onValueChange={(v) => setEditUser(u => ({ ...u, status: v }))}>
+                    <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pendente_onboarding">Pendente Onboarding</SelectItem>
+                      <SelectItem value="pendente">Pendente</SelectItem>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="cancelado">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button onClick={handleEditUser} disabled={editing} className="w-full">
                   {editing ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : null}
