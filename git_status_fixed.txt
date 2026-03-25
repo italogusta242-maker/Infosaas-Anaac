@@ -1,0 +1,92 @@
+ M index.html
+ M src/App.tsx
+ M src/components/AppLayout.tsx
+ M src/components/InsanoLogo.tsx
+ M src/components/RoleGuard.tsx
+ M src/components/SidebarProfile.tsx
+ M src/components/StudentGuard.tsx
+ M src/components/admin/AdminLayout.tsx
+ M src/components/admin/AdminPresenceOverlay.tsx
+ D src/components/admin/DeleteSpecialistDialog.tsx
+ D src/components/admin/EditSpecialistModal.tsx
+ M src/components/admin/PendingStudentsPanel.tsx
+ D src/components/admin/SpecialistMetricsModal.tsx
+ D src/components/closer/AlunosGestaoTab.tsx
+ D src/components/closer/CloserLayout.tsx
+ M src/components/community/CommunityFeed.tsx
+ M src/components/community/GymRatsHub.tsx
+ M src/components/comunidade/ChatTab.tsx
+ M src/components/comunidade/GymRatsTab.tsx
+ D src/components/comunidade/LevelBadge.tsx
+ D src/components/especialista/DietPlanEditor.tsx
+ D src/components/especialista/DietPreviewModal.tsx
+ D src/components/especialista/DietTemplateEditor.tsx
+ D src/components/especialista/DietTemplateManager.tsx
+ D src/components/especialista/DietTemplatesList.tsx
+ D src/components/especialista/EspecialistaLayout.tsx
+ D src/components/especialista/ExerciseSelector.tsx
+ D src/components/especialista/FoodAutocomplete.tsx
+ D src/components/especialista/NotificationBell.tsx
+ D src/components/especialista/PlanVersionTimeline.tsx
+ D src/components/especialista/RestTimePicker.tsx
+ D src/components/especialista/StudentAdherencePanel.tsx
+ D src/components/especialista/StudentDailyMealLog.tsx
+ D src/components/especialista/StudentEvolutionChart.tsx
+ D src/components/especialista/StudentLoadProgression.tsx
+ D src/components/especialista/StudentMealAdherence.tsx
+ D src/components/especialista/StudentMentalCheckins.tsx
+ D src/components/especialista/StudentPerformancePanel.tsx
+ D src/components/especialista/StudentPhotosPanel.tsx
+ D src/components/especialista/StudentWorkoutSummary.tsx
+ D src/components/especialista/TemplateManager.tsx
+ D src/components/especialista/TrainingPlanEditor.tsx
+ D src/components/especialista/TrainingPreviewModal.tsx
+ D src/components/especialista/TrainingTemplatesList.tsx
+ D src/components/especialista/VolumeLimitsEditor.tsx
+ M src/index.css
+ M src/mocks/community.ts
+ M src/pages/AuthPage.tsx
+ M src/pages/BattleMode.tsx
+ M src/pages/Dashboard.tsx
+ M src/pages/Desafio.tsx
+ M src/pages/Dieta.tsx
+ M src/pages/MinhaEvolucao.tsx
+ M src/pages/Onboarding.tsx
+ M src/pages/Perfil.tsx
+ M src/pages/Treinos.tsx
+ M src/pages/admin/AdminAnamneses.tsx
+ M src/pages/admin/AdminPermissoes.tsx
+ M src/pages/admin/AdminUsuarios.tsx
+ D src/pages/closer/CloserApresentacao.tsx
+ D src/pages/closer/CloserDashboard.tsx
+ D src/pages/closer/CloserProdutos.tsx
+ M src/pages/cs/CSAlunos.tsx
+ M src/pages/cs/CSChat.tsx
+ M src/pages/cs/CSDashboard.tsx
+ M src/pages/cs/CSProfissionais.tsx
+ M src/pages/cs/CSRetencao.tsx
+ D src/pages/especialista/EspecialistaAlimentos.tsx
+ D src/pages/especialista/EspecialistaAlunos.tsx
+ D src/pages/especialista/EspecialistaAnamneseSplit.tsx
+ D src/pages/especialista/EspecialistaChat.tsx
+ D src/pages/especialista/EspecialistaDashboard.tsx
+ D src/pages/especialista/EspecialistaDieta.tsx
+ D src/pages/especialista/EspecialistaExercicios.tsx
+ D src/pages/especialista/EspecialistaIA.tsx
+ D src/pages/especialista/EspecialistaPerfil.tsx
+ D src/pages/especialista/EspecialistaPlanos.tsx
+ D src/pages/especialista/EspecialistaPsicologico.tsx
+ D src/pages/especialista/EspecialistaTreino.tsx
+ M src/pages/monthly-assessment/MonthlyAssessment.tsx
+ M src/types/user.ts
+ M tailwind.config.ts
+ M vite.config.ts
+?? check_encoding.js
+?? convert_to_utf8.js
+?? git_status.txt
+?? git_status_fixed.txt
+?? repair_encoding.cjs
+?? src/components/funnel/
+?? src/stores/useFunnelStore.ts
+?? tmp_admin_permissions.txt
+?? tmp_treinos.txt
